@@ -13,17 +13,171 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+// =======================
+// ENUMS
+// =======================
 
 enum Role {
   organizer
   vendor
   admin
+}
+
+enum BookingStatus {
+  pending
+  accepted
+  rejected
+  cancelled
+  completed
+}
+
+enum VerificationStatus {
+  pending
+  approved
+  rejected
+}
+
+// =======================
+// MODELS
+// =======================
+
+model User {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  password    String
+  role        Role
+  phone       String?
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  vendorProfile        VendorProfile?
+  organizerProfile     OrganizerProfile?
+  adminLogs            AdminLog[]
+  verificationReviewed VerificationRequest[] @relation("ReviewedByAdmin")
+}
+
+model VendorProfile {
+  id              String   @id @default(cuid())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String   @unique
+  name            String
+  bio             String?
+  city            City     @relation(fields: [cityId], references: [id])
+  cityId          String
+  category        Category @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  portfolioImages Json?
+  socialLinks     Json?
+  tags            String[]
+  isVerified      Boolean  @default(false)
+  ratingAverage   Float?   @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  listings             Listing[]
+  bookings             BookingRequest[]      @relation("VendorBookings")
+  reviews              Review[]
+  verificationRequests VerificationRequest[]
+}
+
+model OrganizerProfile {
+  id               String   @id @default(cuid())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String   @unique
+  name             String
+  organizationName String?
+  logoUrl          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  bookings BookingRequest[] @relation("OrganizerBookings")
+  reviews  Review[]
+}
+
+model Listing {
+  id          String        @id @default(cuid())
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  vendorId    String
+  title       String
+  description String
+  images      Json?
+  priceMin    Int
+  priceMax    Int
+  category    Category      @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  location    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  bookings BookingRequest[]
+}
+
+model BookingRequest {
+  id          String           @id @default(cuid())
+  organizer   OrganizerProfile @relation("OrganizerBookings", fields: [organizerId], references: [id])
+  organizerId String
+  vendor      VendorProfile    @relation("VendorBookings", fields: [vendorId], references: [id])
+  vendorId    String
+  listing     Listing?         @relation(fields: [listingId], references: [id])
+  listingId   String?
+  status      BookingStatus
+  message     String?
+  eventDate   DateTime
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model Review {
+  id          String           @id @default(cuid())
+  vendor      VendorProfile    @relation(fields: [vendorId], references: [id])
+  vendorId    String
+  organizer   OrganizerProfile @relation(fields: [organizerId], references: [id])
+  organizerId String
+  rating      Int
+  reviewText  String
+  createdAt   DateTime         @default(now())
+}
+
+model Category {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  iconUrl  String?
+  isActive Boolean @default(true)
+
+  vendors  VendorProfile[]
+  listings Listing[]
+}
+
+model City {
+  id      String  @id @default(cuid())
+  name    String
+  state   String
+  pincode String?
+
+  vendors VendorProfile[]
+}
+
+model VerificationRequest {
+  id         String             @id @default(cuid())
+  vendor     VendorProfile      @relation(fields: [vendorId], references: [id])
+  vendorId   String
+  status     VerificationStatus
+  admin      User?              @relation("ReviewedByAdmin", fields: [adminId], references: [id])
+  adminId    String?
+  notes      String?
+  reviewedAt DateTime?
+  createdAt  DateTime           @default(now())
+}
+
+model AdminLog {
+  id           String   @id @default(cuid())
+  admin        User     @relation(fields: [adminId], references: [id])
+  adminId      String
+  action       String
+  targetEntity String
+  targetId     String
+  notes        String?
+  createdAt    DateTime @default(now())
 }
