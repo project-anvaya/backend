@@ -129,7 +129,7 @@ dynamodb/
 .vscode-test
 
 # NestJS specific
-dist
+dist 
 
 # compiled output
 /dist
