@@ -51,6 +51,7 @@ model User {
   lastLoginAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  hashedRefreshToken String? @map("hashed_refresh_token")
 
   vendorProfile        VendorProfile?
   organizerProfile     OrganizerProfile?

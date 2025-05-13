@@ -31,9 +31,16 @@ export class UsersService {
       where: { id },
     });
     if (!user) {
-      throw new NotFoundException(`User with ID \'${id}\' not found.`);
+      throw new NotFoundException(`User with ID '${id}' not found.`);
     }
     return user;
+  }
+
+  async updateRefreshToken(userId: string, hashedRefreshToken: string | null): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { hashedRefreshToken },
+    });
   }
 
   // Add other user-related methods as needed (update, delete, find all, etc.)

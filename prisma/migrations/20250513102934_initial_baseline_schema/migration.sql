@@ -1,13 +1,26 @@
 -- CreateEnum
+CREATE TYPE "Role" AS ENUM ('organizer', 'vendor', 'admin');
+
+-- CreateEnum
 CREATE TYPE "BookingStatus" AS ENUM ('pending', 'accepted', 'rejected', 'cancelled', 'completed');
 
 -- CreateEnum
 CREATE TYPE "VerificationStatus" AS ENUM ('pending', 'approved', 'rejected');
 
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "lastLoginAt" TIMESTAMP(3),
-ADD COLUMN     "phone" TEXT;
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" "Role" NOT NULL,
+    "phone" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "lastLoginAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "VendorProfile" (
@@ -130,6 +143,9 @@ CREATE TABLE "AdminLog" (
 
     CONSTRAINT "AdminLog_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "VendorProfile_userId_key" ON "VendorProfile"("userId");

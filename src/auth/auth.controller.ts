@@ -1,11 +1,13 @@
-import { Controller, Post, Body, UsePipes, ValidationPipe, HttpCode, HttpStatus, Get, Request, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UsePipes, ValidationPipe, HttpCode, HttpStatus, Get, Request, UseGuards, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtRefreshGuard } from './jwt-refresh.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Role } from '@prisma/client';
+import { JwtPayload } from 'jsonwebtoken';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +32,14 @@ export class AuthController {
   @Get('profile')
   getProfile(@Request() req) {
     return this.authService.getProfile(req.user.userId);
+  }
+
+  @UseGuards(JwtRefreshGuard)
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshTokens(@Request() req) {
+    const userFromRefreshToken = req.user; // User object (without password/hashedToken) from JwtRefreshStrategy
+    return this.authService.getNewAccessToken(userFromRefreshToken);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
