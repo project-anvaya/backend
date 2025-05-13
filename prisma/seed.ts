@@ -59,6 +59,7 @@ async function main() {
     update: {},
     create: {
       email: adminEmail,
+      name: "Anvaya Admin",
       password: hashedPassword,
       role: Role.admin,
       isActive: true,
@@ -84,6 +85,7 @@ async function main() {
       update: {},
       create: {
         email: sampleVendorEmail,
+        name: "Sample Vendor User",
         password: vendorHashedPassword,
         role: Role.vendor,
         isActive: true,

@@ -43,6 +43,7 @@ enum VerificationStatus {
 
 model User {
   id          String    @id @default(cuid())
+  name        String?
   email       String    @unique
   password    String
   role        Role
@@ -109,6 +110,7 @@ model Listing {
   category    Category      @relation(fields: [categoryId], references: [id])
   categoryId  String
   location    String?
+  isAvailable Boolean  @default(true)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
